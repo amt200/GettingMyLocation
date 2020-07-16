@@ -14,6 +14,10 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -30,6 +34,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     TextView tvLatLng;
     private GoogleMap map;
     private Marker lastKnownLocation;
+    LocationRequest mLocationRequest;
+    LocationCallback mLocationCallback;
+
+    FusedLocationProviderClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +51,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnStartDetect = findViewById(R.id.btnStart);
         btnStopDetect = findViewById(R.id.btnStop);
         btnCheck = findViewById(R.id.btnCheck);
+
+        client = LocationServices.getFusedLocationProviderClient(MainActivity.this);
+
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setSmallestDisplacement(100);
+
+        mLocationCallback = new LocationCallback(){};
 
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -80,10 +98,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         if(v.getId() == R.id.btnStart){
-
+            if(checkPermission()){
+                client.requestLocationUpdates(mLocationRequest, mLocationCallback, null);
+            }
         }
         else if(v.getId() == R.id.btnStop){
-
+            client.removeLocationUpdates(mLocationCallback);
         }
         else{
 
